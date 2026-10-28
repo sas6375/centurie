@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Centurie : le jeu de prédictions de la famille. 16 questions, 1 000 jetons, aucun argent réel.">
+<meta property="og:title" content="Centurie en famille">
+<meta property="og:description" content="16 prédictions pour le week-end. Mise tes jetons, poste ton ticket.">
+<meta name="theme-color" content="#0B0720">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Centurie en famille</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Layout: one narrow arcade column, 13 prediction cards, fixed pixel nav at the bottom. Single dark theme by choice (neon arcade). */
+:root{
+  color-scheme:dark;
+  --bg:#0B0720; --bg2:#150A33; --panel:#170D3C; --deep:#090B22; --line:#3B2F78;
+  --fg:#F4EFFF; --mut:#A99BD9; --red:#FF2E4D; --red-d:#6E0B1E; --cyan:#3DF2FF; --cyan-d:#1B6F78;
+  --mag:#FF4FD8; --yel:#FFD84A; --white:#FFFFFF;
+  --f-pix:'Press Start 2P', ui-monospace, monospace;
+  --f-txt:'VT323', ui-monospace, 'Courier New', monospace;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--f-txt);font-size:22px;line-height:1.15;
+  background:linear-gradient(180deg,transparent 70%,rgba(255,46,77,.14) 100%) fixed,
+  repeating-linear-gradient(90deg,rgba(255,79,216,.10) 0 2px,transparent 2px 39px) 0 100%/100% 30% no-repeat fixed,
+  repeating-linear-gradient(0deg,rgba(255,79,216,.10) 0 2px,transparent 2px 19px) 0 100%/100% 30% no-repeat fixed,
+  linear-gradient(var(--bg),var(--bg2)) fixed;
+  min-height:100%}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px)}
+.wrap{max-width:480px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 120px}
+.pix{font-family:var(--f-pix);line-height:1.55;letter-spacing:0}
+.mut{color:var(--mut)}
+.neon{color:var(--red);text-shadow:0 0 6px var(--red),0 0 16px var(--red),3px 3px 0 var(--red-d)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--yel);outline-offset:3px}
+@keyframes bl{50%{opacity:0}}
+.blink{animation:bl 1s steps(1) infinite}
+@media (prefers-reduced-motion:reduce){.blink{animation:none}}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:18px;margin:0}
+.sub{font-family:var(--f-pix);font-size:7px;color:var(--cyan);margin-top:6px;display:block}
+.pill{display:flex;align-items:center;gap:8px;border:3px solid var(--yel);padding:3px 10px;background:var(--panel);color:var(--yel);font-size:23px;white-space:nowrap}
+.hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:12px}
+.hc{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;background:#120A30;border:3px solid var(--line);padding:4px}
+.hc b{font-family:var(--f-pix);font-size:12px;font-weight:400;color:var(--yel)}
+.hc span{font-size:17px;color:var(--mut)}
+
+/* sections */
+.view{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+.h2{font-family:var(--f-pix);font-size:10px;color:var(--mag);margin:6px 0 0}
+.intro{background:var(--panel);border:3px solid var(--line);padding:10px 12px;font-size:20px}
+
+/* question card */
+.card{background:var(--panel);border:4px solid var(--cyan);box-shadow:5px 5px 0 var(--red);padding:12px}
+.card.closed{border-color:var(--line);box-shadow:5px 5px 0 #2a2155}
+.card.done{border-color:var(--mag);box-shadow:5px 5px 0 var(--cyan)}
+.chead{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.tag{font-family:var(--f-pix);font-size:8px;color:var(--mag)}
+.when{font-size:18px;color:var(--yel);text-align:right}
+.qt{font-family:var(--f-pix);font-size:11px;line-height:1.65;margin:8px 0 10px;text-wrap:balance}
+.opts{display:grid;gap:8px}
+.opts.n2{grid-template-columns:1fr 1fr}
+.opts.n3{grid-template-columns:1fr 1fr 1fr}
+.opts.n4{grid-template-columns:1fr 1fr}
+.opt{min-height:50px;padding:6px 8px;background:var(--deep);border:3px solid var(--line);color:var(--fg);font-family:var(--f-pix);font-size:10px;line-height:1.4}
+.opt[aria-pressed="true"]{background:var(--cyan);color:var(--bg);border-color:var(--white);box-shadow:4px 4px 0 var(--mag)}
+.opt:disabled{cursor:default}
+.stakes{display:flex;gap:8px;margin-top:10px;align-items:center}
+.stk{flex:1;min-height:44px;background:var(--panel);border:3px solid #5A4B12;color:var(--yel);font-family:var(--f-pix);font-size:11px}
+.stk[aria-pressed="true"]{background:var(--yel);color:var(--bg);border-color:var(--white);box-shadow:3px 3px 0 var(--red)}
+.stk:disabled{opacity:.35;cursor:default}
+.del{min-width:44px;min-height:44px;background:transparent;border:3px solid var(--line);color:var(--mut);font-family:var(--f-pix);font-size:10px}
+.src{font-size:17px;color:var(--mut);margin-top:8px}
+.verdict{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding:6px 10px;background:var(--deep);border:3px solid var(--line);font-size:20px}
+.verdict b{font-family:var(--f-pix);font-size:11px;font-weight:400}
+.win{color:var(--cyan)} .lose{color:var(--red)} .void{color:var(--mut)}
+
+/* ticket */
+.ticket{background:var(--deep);border:4px dashed var(--yel);padding:12px;font-size:19px;white-space:pre-wrap;word-break:break-word;margin:0;user-select:all}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.cta{flex:1;display:flex;align-items:center;justify-content:center;min-height:56px;padding:0 12px;border:4px solid var(--white);background:var(--red);color:var(--white);font-family:var(--f-pix);font-size:11px;text-decoration:none;box-shadow:5px 5px 0 var(--cyan);text-shadow:2px 2px 0 #7A0F22;text-align:center}
+.cta.alt{background:#25D366;color:#062b14;text-shadow:none;box-shadow:5px 5px 0 var(--mag)}
+.cta.ghost{background:var(--panel);color:var(--cyan);border-color:var(--cyan);box-shadow:none;text-shadow:none}
+.cta:disabled{opacity:.4;cursor:default}
+.flash{font-family:var(--f-pix);font-size:9px;color:var(--cyan);min-height:14px}
+.warn{background:var(--red);color:var(--white);font-family:var(--f-pix);font-size:9px;padding:8px 10px;line-height:1.6}
+.ok{background:var(--panel);border:3px solid var(--cyan);color:var(--cyan);font-family:var(--f-pix);font-size:9px;padding:8px 10px;line-height:1.6}
+
+/* scores */
+.screen{background:radial-gradient(ellipse at 50% 35%,#1C2257 0%,var(--deep) 85%);border:4px solid #4A3C96;border-radius:14px;padding:10px 6px;box-shadow:5px 5px 0 var(--red)}
+.hs{display:grid;grid-template-columns:44px 56px 1fr auto;align-items:center;column-gap:8px;min-height:42px;padding:0 8px;font-family:var(--f-pix);font-size:11px;font-variant-numeric:tabular-nums}
+.hs.head{min-height:28px;font-size:7px;color:var(--mut)}
+.hs.me{background:var(--mag);color:var(--bg)}
+.hs small{font-family:var(--f-txt);font-size:18px}
+.empty{font-size:20px;text-align:center;padding:18px 10px;color:var(--mut)}
+.dist{display:grid;gap:10px}
+.drow{background:var(--panel);border:3px solid var(--line);padding:8px 10px}
+.drow .dq{font-size:19px}
+.bar{display:flex;height:14px;margin-top:6px;border:2px solid var(--white)}
+.bar span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:17px;margin-top:4px}
+details{background:var(--panel);border:3px solid var(--line);padding:10px 12px}
+summary{font-family:var(--f-pix);font-size:9px;color:var(--yel);cursor:pointer;min-height:24px;line-height:1.6}
+textarea{width:100%;min-height:140px;background:var(--deep);color:var(--fg);border:3px solid var(--line);font-family:var(--f-txt);font-size:18px;padding:8px;margin-top:10px}
+.res{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;margin-top:10px;font-size:18px}
+select{background:var(--deep);color:var(--fg);border:3px solid var(--line);font-family:var(--f-txt);font-size:18px;min-height:40px;max-width:150px}
+
+/* rules */
+.rules{display:grid;gap:10px}
+.rule{background:var(--panel);border:3px solid var(--line);padding:10px 12px;font-size:20px}
+.rule b{font-family:var(--f-pix);font-size:9px;font-weight:400;color:var(--yel);display:block;margin-bottom:6px}
+
+/* nav */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--bg);border-top:4px solid var(--mag);padding:6px max(10px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+.nav .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ni{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:54px;background:transparent;border:0;color:var(--fg);font-family:var(--f-pix);font-size:7px}
+.ni[aria-current="page"]{background:var(--mag);color:var(--bg)}
+.dot{position:absolute;top:4px;right:14px;width:10px;height:10px;background:var(--red);border:2px solid var(--white)}
+
+/* start screen */
+.start{position:fixed;inset:0;z-index:60;background:linear-gradient(var(--bg),var(--bg2));overflow:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.start .in{max-width:420px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+.slots{display:flex;gap:14px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:6px}
+.arr{width:64px;min-height:44px;background:var(--panel);border:3px solid var(--cyan);color:var(--cyan);font-family:var(--f-pix);font-size:12px}
+.let{display:flex;align-items:center;justify-content:center;width:64px;height:72px;background:var(--deep);border:4px solid var(--yel);font-family:var(--f-pix);font-size:30px;color:var(--yel);text-shadow:3px 3px 0 #7A5A00}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 class="pix neon logo">CENTURIE</h1>
+      <span class="sub">TEST EN FAMILLE · 30 OCT. – 3 NOV.</span>
+    </div>
+    <span class="pill" id="pill"><svg width="24" height="24" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><path fill="#FFD84A" d="M2 0h4v1H2zM1 1h1v1H1zM6 1h1v1H6zM0 2h1v4H0zM7 2h1v4H7zM1 6h1v1H1zM6 6h1v1H6zM2 7h4v1H2z"/><path fill="#FF9F1C" d="M2 1h4v1H2zM1 2h6v4H1zM2 6h4v1H2z"/><path fill="#FFF3B0" d="M3 2h2v1H3zM2 3h1v1H2z"/></svg><span id="pill-n">1 000</span></span>
+  </header>
+  <div class="hud" id="hud"></div>
+  <main class="view" id="view" aria-live="polite"></main>
+</div>
+
+<nav class="nav" aria-label="Navigation">
+  <div class="in">
+    <button class="ni" data-go="jouer"><svg width="21" height="27" viewBox="0 0 7 9" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 0h5v1H1zM0 1h2v1H0zM5 1h2v2H5zM4 3h2v1H4zM2 4h2v2H2zM2 7h2v2H2z"/></svg>PRÉDIRE</button>
+    <button class="ni" data-go="ticket"><svg width="27" height="21" viewBox="0 0 9 7" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h9v2H8v3h1v2H0V5h1V2H0zM3 2h3v1H3zM3 4h3v1H3z"/></svg>TICKET<span class="dot" id="dot" hidden></span></button>
+    <button class="ni" data-go="scores"><svg width="33" height="21" viewBox="0 0 11 7" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h1v1H0zM5 0h1v1H5zM10 0h1v1h-1zM0 1h2v1H0zM4 1h3v1H4zM9 1h2v1H9zM0 2h3v1H0zM4 2h3v1H4zM8 2h3v1H8zM0 3h11v4H0z"/></svg>SCORES</button>
+    <button class="ni" data-go="regles"><svg width="21" height="27" viewBox="0 0 7 9" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 0h1v1H3zM2 2h3v1H2zM3 3h1v4H3zM2 7h3v1H2z"/></svg>RÈGLES</button>
+  </div>
+</nav>
+
+<div class="start" id="start" hidden>
+  <div class="in">
+    <h2 class="pix neon" style="font-size:20px;margin:8px 0 0">CENTURIE</h2>
+    <p class="pix" style="font-size:11px;color:var(--cyan);margin:0">NOUVEAU JOUEUR</p>
+    <p class="pix" style="font-size:9px;margin:0">ENTRE TES INITIALES</p>
+    <div class="slots" id="slots"></div>
+    <p class="mut" style="margin:0;font-size:20px">Trois lettres, comme sur une borne d'arcade. Elles servent de nom dans les scores.</p>
+    <div class="ok" style="width:100%;text-align:left">1 000 JETONS OFFERTS. JEU GRATUIT, AUCUN ARGENT RÉEL.</div>
+    <button class="cta" id="press" style="width:100%">PRESS START</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===== Les 16 questions (heure de Paris, UTC+1 depuis le 25/10) ===== */
+var Q=[
+ {id:1,th:"FOOT",q:"Le PSG gagne-t-il au Havre ?",o:["OUI","NON"],c:"2026-10-30T19:00:00+01:00",src:"LFP · résultat ven. soir"},
+ {id:2,th:"BANQUE CENTRALE",q:"La BCE laisse-t-elle ses taux inchangés ce jeudi 29 octobre ?",o:["OUI","NON"],c:"2026-10-29T13:00:00+01:00",src:"BCE · décision jeu. 14h15"},
+ {id:3,th:"NBA",q:"Spurs – Minnesota (nuit de samedi à dimanche) : Wembanyama marque-t-il 25 points ou plus ?",o:["OUI","NON"],c:"2026-10-31T22:00:00+01:00",src:"NBA · annulée s'il ne joue pas"},
+ {id:4,th:"ÉCONOMIE",q:"Chômage de la zone euro en septembre (Eurostat, ven. 30/10) : par rapport à août ?",o:["HAUSSE","STABLE","BAISSE"],c:"2026-10-30T10:00:00+01:00",src:"Eurostat · ven. 11h"},
+ {id:5,th:"F1",q:"Kimi Antonelli (leader, 365 pts) gagne-t-il le GP du Mexique ?",o:["OUI","NON"],c:"2026-11-01T21:00:00+01:00",src:"F1 · résultat dim. soir"},
+ {id:6,th:"F1",q:"Isack Hadjar finit-il dans le top 10 au Mexique ?",o:["OUI","NON"],c:"2026-11-01T21:00:00+01:00",src:"F1 · résultat dim. soir"},
+ {id:7,th:"MÉTÉO",q:"Pleuvra-t-il à Paris samedi 31 octobre (1 mm ou plus) ?",o:["OUI","NON"],c:"2026-10-30T22:00:00+01:00",src:"Station Paris-Montsouris · Météo-France / Infoclimat"},
+ {id:8,th:"MÉTÉO",q:"Température max. à Paris dimanche 1er novembre ?",o:["< 12°C","12-15°C","> 15°C"],c:"2026-10-31T22:00:00+01:00",src:"Station Paris-Montsouris · Météo-France / Infoclimat"},
+ {id:9,th:"BOURSE",q:"Le CAC 40 clôture-t-il vendredi 30/10 plus haut que mercredi 28/10 ?",o:["OUI","NON"],c:"2026-10-29T22:00:00+01:00",src:"Euronext · ven. 17h35"},
+ {id:10,th:"CRYPTO",q:"Le Bitcoin vaut-il plus dimanche 20h que jeudi 20h ?",o:["OUI","NON"],c:"2026-10-30T20:00:00+01:00",src:"CoinMarketCap · dim. 20h"},
+ {id:11,th:"PRÉSIDENTIELLE",q:"Premier sondage de 1er tour publié du 29/10 au 2/11 : qui arrive 2e derrière le RN ?",o:["MÉLENCHON","PHILIPPE","GLUCKSMANN","AUTRE"],c:"2026-10-29T08:00:00+01:00",src:"Sondeur · annulée si aucun sondage"},
+ {id:12,th:"POLITIQUE",q:"La 1re partie du budget 2027 est-elle adoptée au vote de l'Assemblée du mardi 3 novembre ?",o:["OUI","NON"],c:"2026-11-02T22:00:00+01:00",src:"Assemblée nationale · « NON » si rejet, report ou 49.3"},
+ {id:13,th:"HASARD",q:"EuroMillions de vendredi : la somme des 5 numéros dépasse-t-elle 127 ?",o:["OUI","NON"],c:"2026-10-30T20:00:00+01:00",src:"FDJ · tirage ven. soir"},
+ {id:14,th:"CINÉ · JEUNES",q:"Box-office US du week-end d'Halloween : quel film finit n°1 ?",o:["CLAYFACE","YOU CAN SEE EVERYTHING","AUTRE"],c:"2026-10-30T20:00:00+01:00",src:"Box Office Mojo · estimations dim. soir"},
+ {id:15,th:"JEU VIDÉO · JEUNES",q:"Rockstar publie-t-il une nouvelle bande-annonce de GTA VI d'ici dimanche 1er novembre minuit ?",o:["OUI","NON"],c:"2026-10-29T12:00:00+01:00",src:"Chaîne YouTube Rockstar Games"},
+ {id:16,th:"MUSIQUE · JEUNES",q:"Top Singles SNEP publié vendredi : le n°1 est-il le même que la semaine d'avant ?",o:["OUI","NON"],c:"2026-10-29T22:00:00+01:00",src:"SNEP · classement du vendredi"}
+];
+Q.forEach(function(q){q.t=Date.parse(q.c);});
+
+/* ===== Données partagées : tickets reçus et résultats, mis à jour à chaque republication ===== */
+var DATA={
+  updated:"",
+  results:{},   /* id: index de l'option gagnante, ou "x" si annulée */
+  tickets:[]    /* lignes « #CENTURIE ABC t picks » collectées dans le groupe */
+};
+
+var START=1000, STAKES=[50,100,250], KEY="centurie-famille-v1", BKEY="centurie-banquier-v1";
+var L="ABCD";
+
+/* ===== stockage local (confort par joueur) ===== */
+function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+var me=load(KEY,{ini:"",picks:{},sent:""});
+var bk=load(BKEY,{text:"",results:{}});
+var tab="jouer", letters=[0,0,0];
+
+/* ===== utilitaires ===== */
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+function fmt(n){return Math.round(n).toLocaleString("fr-FR").replace(/ | /g," ");}
+var JOURS=["DIM.","LUN.","MAR.","MER.","JEU.","VEN.","SAM."];
+function paris(t){ /* date en heure de Paris (UTC+1 sur toute la période) */
+  var d=new Date(t+3600000);
+  return {d:d.getUTCDate(),m:d.getUTCMonth()+1,h:d.getUTCHours(),mi:d.getUTCMinutes(),w:d.getUTCDay()};
+}
+function pad(n){return (n<10?"0":"")+n;}
+function closeLabel(q,now){
+  var left=q.t-now;
+  if(left<=0) return "FIGÉE";
+  if(left<6*3600000){var h=Math.floor(left/3600000),m=Math.floor(left%3600000/60000);return "SE FIGE DANS "+(h?h+"H":"")+pad(m)+"M";}
+  var p=paris(q.t);return "CLÔT. "+JOURS[p.w]+" "+pad(p.d)+"/"+pad(p.m)+" "+p.h+"H"+(p.mi?pad(p.mi):"");
+}
+function staked(){var s=0;for(var k in me.picks)s+=me.picks[k].s;return s;}
+
+/* ===== ticket : texte lisible + code machine ===== */
+function code(){
+  var ids=Object.keys(me.picks).map(Number).sort(function(a,b){return a-b;});
+  if(!ids.length||!me.ini) return "";
+  var parts=ids.map(function(id){var p=me.picks[id];return id+L[p.o].toLowerCase()+p.s;});
+  return "#CENTURIE "+me.ini+" "+Math.floor(Date.now()/60000).toString(36)+" "+parts.join(".");
+}
+function picksSig(){ /* signature sans l'heure, pour savoir si le ticket a changé */
+  return Object.keys(me.picks).sort().map(function(id){var p=me.picks[id];return id+":"+p.o+":"+p.s;}).join("|");
+}
+function ticketText(c){
+  var lines=["CENTURIE · TICKET DE "+me.ini];
+  Q.forEach(function(q){var p=me.picks[q.id];if(p)lines.push(q.id+". "+q.q+" → "+q.o[p.o]+" ("+p.s+" jetons)");});
+  lines.push("");lines.push(c);
+  return lines.join("\n");
+}
+
+/* ===== lecture des tickets collés ou publiés ===== */
+var RX=/#CENTURIE\s+([A-Z]{3})\s+([0-9a-z]+)\s+((?:\d{1,2}[a-d]\d{1,4}\.?)+)/g;
+function parseTickets(text){
+  var out=[],m;RX.lastIndex=0;
+  while((m=RX.exec(text))){
+    var picks={};
+    m[3].split(".").forEach(function(p){var mm=/^(\d{1,2})([a-d])(\d{1,4})$/.exec(p);if(mm){var id=+mm[1],q=Q[id-1];var o=L.indexOf(mm[2].toUpperCase());if(q&&o<q.o.length)picks[id]={o:o,s:+mm[3]};}});
+    out.push({ini:m[1],t:parseInt(m[2],36)*60000,picks:picks,raw:m[0]});
+  }
+  return out;
+}
+function allTickets(){
+  var seen={},list=[];
+  parseTickets(DATA.tickets.join("\n")+"\n"+(bk.text||"")).forEach(function(t){if(!seen[t.raw]){seen[t.raw]=1;list.push(t);}});
+  return list;
+}
+function allResults(){
+  var r={},k;for(k in DATA.results)r[k]=DATA.results[k];
+  for(k in bk.results){if(bk.results[k]!==""&&bk.results[k]!=null)r[k]=bk.results[k];}
+  return r;
+}
+
+/* ===== calcul des scores (pari mutuel) ===== */
+function compute(){
+  var tickets=allTickets(),res=allResults(),players={},pools={};
+  tickets.forEach(function(t){(players[t.ini]=players[t.ini]||[]).push(t);});
+  var bets={}; /* ini -> id -> pick */
+  Object.keys(players).forEach(function(ini){
+    bets[ini]={};
+    Q.forEach(function(q){
+      var best=null;players[ini].forEach(function(t){if(t.t<q.t&&(!best||t.t>best.t))best=t;});
+      if(best&&best.picks[q.id]){bets[ini][q.id]=best.picks[q.id];
+        var pl=pools[q.id]=pools[q.id]||{tot:0,by:[0,0,0,0],n:[0,0,0,0]};
+        var b=best.picks[q.id];pl.tot+=b.s;pl.by[b.o]+=b.s;pl.n[b.o]++;}
+    });
+  });
+  function outcome(q,b){ /* {ret, gain, kind} pour une mise résolue */
+    var r=res[q.id];
+    if(r==="x") return {ret:b.s,gain:0,kind:"void"};
+    if(b.o!==r) return {ret:0,gain:-b.s,kind:"lose"};
+    var pl=pools[q.id],p=pl.by[r]/pl.tot*100;
+    var g=Math.min(10*b.s,b.s*100/p-b.s);if(p<50)g+=20;g=Math.round(g);
+    return {ret:b.s+g,gain:g,kind:"win",p:p};
+  }
+  var rows=Object.keys(bets).map(function(ini){
+    var sc=START,live=0,wins=0;
+    Q.forEach(function(q){var b=bets[ini][q.id];if(!b)return;sc-=b.s;
+      if(res[q.id]===undefined){live+=b.s;}else{var o=outcome(q,b);sc+=o.ret;if(o.kind==="win")wins++;}});
+    return {ini:ini,score:sc,live:live,wins:wins};
+  }).sort(function(a,b){return (b.score+b.live)-(a.score+a.live)||b.wins-a.wins;});
+  return {rows:rows,pools:pools,bets:bets,res:res,outcome:outcome,count:tickets.length};
+}
+
+/* ===== rendu ===== */
+var view=document.getElementById("view");
+function hud(C){
+  var mine=C.rows.filter(function(r){return r.ini===me.ini;})[0];
+  var free=START-staked();
+  document.getElementById("pill-n").textContent=fmt(free);
+  var done=Q.filter(function(q){return C.res[q.id]!==undefined;}).length;
+  document.getElementById("hud").innerHTML=
+    '<div class="hc"><b>'+(me.ini||"???")+'</b><span>JOUEUR</span></div>'+
+    '<div class="hc"><b>'+Object.keys(me.picks).length+'/'+Q.length+'</b><span>PRÉDICTIONS</span></div>'+
+    '<div class="hc"><b>'+(mine?fmt(mine.score+mine.live):"—")+'</b><span>SCORE · '+done+'/'+Q.length+'</span></div>';
+  var changed=me.ini&&Object.keys(me.picks).length&&picksSig()!==me.sent;
+  document.getElementById("dot").hidden=!changed;
+}
+
+function renderJouer(C){
+  var now=Date.now(),free=START-staked(),h="";
+  h+='<div class="intro">Choisis ta réponse puis ta mise. Ensuite, envoie ton <b class="pix" style="font-size:9px;color:var(--yel)">TICKET</b> dans le groupe WhatsApp avant chaque clôture.</div>';
+  var open=Q.filter(function(q){return q.t>now;}).sort(function(a,b){return a.t-b.t;});
+  var closed=Q.filter(function(q){return q.t<=now;}).sort(function(a,b){return a.t-b.t;});
+  if(open.length) h+='<h2 class="h2">OUVERTES · '+open.length+'</h2>';
+  open.forEach(function(q){h+=card(q,C,now,free);});
+  if(closed.length) h+='<h2 class="h2">FIGÉES · '+closed.length+'</h2>';
+  closed.forEach(function(q){h+=card(q,C,now,free);});
+  view.innerHTML=h;
+}
+function card(q,C,now,free){
+  var p=me.picks[q.id],isClosed=q.t<=now,r=C.res[q.id],resolved=r!==undefined;
+  var cls="card"+(resolved?" done":isClosed?" closed":"");
+  var h='<article class="'+cls+'"><div class="chead"><span class="tag">'+q.id+' · '+q.th+'</span><span class="when'+(q.t-now<6*3600000&&!isClosed?' blink':'')+'">'+closeLabel(q,now)+'</span></div>';
+  h+='<p class="qt">'+esc(q.q)+'</p><div class="opts n'+q.o.length+'">';
+  q.o.forEach(function(o,i){h+='<button class="opt" data-q="'+q.id+'" data-o="'+i+'" aria-pressed="'+(p&&p.o===i)+'"'+(isClosed?' disabled':'')+'>'+o+'</button>';});
+  h+='</div>';
+  if(!isClosed&&p){
+    h+='<div class="stakes" role="group" aria-label="Mise">';
+    STAKES.forEach(function(s){var can=s<=free+p.s;h+='<button class="stk" data-q="'+q.id+'" data-s="'+s+'" aria-pressed="'+(p.s===s)+'"'+(can?'':' disabled')+'>'+s+'</button>';});
+    h+='<button class="del" data-del="'+q.id+'" aria-label="Retirer ma prédiction">X</button></div>';
+  } else if(isClosed&&p&&!resolved){
+    h+='<div class="verdict"><span>Ta mise : '+q.o[p.o]+' · '+p.s+'</span><b class="mut">EN ATTENTE</b></div>';
+  }
+  if(resolved){
+    var lbl=r==="x"?"ANNULÉE":q.o[r];
+    var b=C.bets[me.ini]&&C.bets[me.ini][q.id],out="";
+    if(b){var o=C.outcome(q,b);out=o.kind==="win"?'<b class="win">+'+fmt(o.gain)+'</b>':o.kind==="void"?'<b class="void">REMBOURSÉ</b>':'<b class="lose">−'+fmt(b.s)+'</b>';}
+    else if(p){out='<b class="mut">TICKET NON REÇU</b>';}
+    h+='<div class="verdict"><span>RÉSULTAT : <span class="pix" style="font-size:10px;color:var(--cyan)">'+lbl+'</span></span>'+out+'</div>';
+  }
+  h+='<div class="src">Source : '+esc(q.src)+'</div></article>';
+  return h;
+}
+
+function renderTicket(){
+  var c=code(),h="";
+  if(!c){view.innerHTML='<div class="empty">Ton ticket est vide. Fais au moins une prédiction dans PRÉDIRE.</div>';return;}
+  var txt=ticketText(c),changed=picksSig()!==me.sent;
+  h+=changed?'<div class="warn blink-off">TICKET À ENVOYER : TES PRÉDICTIONS ONT CHANGÉ DEPUIS LE DERNIER ENVOI.</div>':'<div class="ok">TICKET ENVOYÉ. RENVOIE-LE SI TU CHANGES D\'AVIS.</div>';
+  h+='<pre class="ticket" id="tk">'+esc(txt)+'</pre>';
+  h+='<div class="row"><button class="cta" id="copy">COPIER</button><a class="cta alt" id="wa" href="https://wa.me/?text='+encodeURIComponent(txt)+'" target="_blank" rel="noopener">WHATSAPP</a></div>';
+  h+='<div class="flash" id="flash" role="status"></div>';
+  h+='<div class="intro">Colle le ticket dans le groupe famille. Pour chaque question, c\'est ton dernier ticket envoyé <b>avant sa clôture</b> qui compte. Jetons restants : <b style="color:var(--yel)">'+fmt(START-staked())+'</b>.</div>';
+  view.innerHTML=h;
+}
+
+function renderScores(C){
+  var h="",now=Date.now();
+  h+='<h2 class="h2">HIGH SCORES</h2><div class="screen"><div class="hs head"><span>RANG</span><span>NOM</span><span>EN JEU</span><span>SCORE</span></div>';
+  if(!C.rows.length){h+='<div class="empty">Aucun ticket collecté pour l\'instant. Les scores s\'affichent dès que les tickets du groupe sont ajoutés (mode banquier ci-dessous, ou mise à jour de la page).</div>';}
+  var ranks=["1ST","2ND","3RD"];
+  C.rows.forEach(function(r,i){
+    var col=i===0?"var(--yel)":i===1?"var(--fg)":i===2?"#FF9F1C":"var(--cyan)";
+    h+='<div class="hs'+(r.ini===me.ini?' me':'')+'" style="'+(r.ini===me.ini?'':'color:'+col)+'"><span>'+(ranks[i]||(i+1)+"TH")+'</span><span>'+esc(r.ini)+'</span><small>'+(r.live?fmt(r.live):"—")+'</small><span>'+fmt(r.score+r.live)+'</span></div>';
+  });
+  h+='</div><p class="mut" style="margin:0;font-size:18px">Score = jetons libres + jetons encore en jeu. '+C.count+' ticket'+(C.count>1?'s':'')+' pris en compte'+(DATA.updated?' · mis à jour '+esc(DATA.updated):'')+'.</p>';
+  var closed=Q.filter(function(q){return q.t<=now&&C.pools[q.id];});
+  if(closed.length){
+    var cols=["var(--cyan)","var(--red)","var(--yel)","var(--mag)"];
+    h+='<h2 class="h2">CE QU\'A JOUÉ LA FAMILLE</h2><div class="dist">';
+    closed.forEach(function(q){var pl=C.pools[q.id],r=C.res[q.id];
+      h+='<div class="drow"><div class="dq">'+q.id+'. '+esc(q.q)+'</div><div class="bar">';
+      q.o.forEach(function(o,i){var w=pl.tot?pl.by[i]/pl.tot*100:0;if(w)h+='<span style="width:'+w+'%;background:'+cols[i]+'"></span>';});
+      h+='</div><div class="legend">';
+      q.o.forEach(function(o,i){var w=pl.tot?Math.round(pl.by[i]/pl.tot*100):0;h+='<span style="color:'+cols[i]+'">'+o+' '+w+'% ('+pl.n[i]+')'+(r===i?' ✓':'')+'</span>';});
+      h+='</div></div>';});
+    h+='</div>';
+  }
+  h+='<details id="bk"'+(bk.text?' open':'')+'><summary>MODE BANQUIER (POUR SAS)</summary>';
+  h+='<p style="margin:10px 0 0;font-size:19px">Colle ici les messages du groupe WhatsApp (ou l\'export de la discussion). Les lignes « #CENTURIE » sont lues automatiquement. Rien n\'est envoyé : tout reste sur ce téléphone.</p>';
+  h+='<label for="bk-text" class="mut" style="display:block;margin-top:8px;font-size:18px">Tickets reçus</label><textarea id="bk-text" placeholder="#CENTURIE SAS lzk3a1 1a100.2b50">'+esc(bk.text||"")+'</textarea>';
+  h+='<div class="row" style="margin-top:10px"><button class="cta ghost" id="bk-go">CALCULER</button><button class="cta ghost" id="bk-clear">EFFACER</button></div>';
+  h+='<p style="margin:12px 0 0;font-size:19px">Résultats (les miens priment sur ceux de la page) :</p><div class="res">';
+  Q.forEach(function(q){var v=bk.results[q.id];v=v===undefined?"":v;
+    h+='<label for="r'+q.id+'">'+q.id+'. '+esc(q.q.length>46?q.q.slice(0,44)+"…":q.q)+'</label><select id="r'+q.id+'" data-r="'+q.id+'"><option value="">—</option>';
+    q.o.forEach(function(o,i){h+='<option value="'+i+'"'+(String(v)===String(i)?' selected':'')+'>'+o+'</option>';});
+    h+='<option value="x"'+(v==="x"?' selected':'')+'>ANNULÉE</option></select>';});
+  h+='</div></details>';
+  view.innerHTML=h;
+}
+
+function renderRegles(){
+  view.innerHTML='<div class="rules">'+
+  '<div class="rule"><b>1. TES JETONS</b>Tu as 1 000 jetons virtuels pour tout le test. Mise 50, 100 ou 250 par question. Aucun argent réel.</div>'+
+  '<div class="rule"><b>2. LA COTE, C\'EST LA FAMILLE</b>À la clôture, on regarde quelle part des jetons est sur ta réponse. Si tu as raison : gain = mise × 100 / part de ton camp − mise. Moins vous êtes de ton avis, plus ça rapporte. Exemple : 100 jetons sur une réponse qui pèse 40 % → +150.</div>'+
+  '<div class="rule"><b>3. BONUS CONTRE-COURANT</b>+20 jetons si tu gagnes avec le camp minoritaire (moins de 50 %).</div>'+
+  '<div class="rule"><b>4. LE TICKET</b>Tes prédictions ne comptent qu\'une fois ton ticket posté dans le groupe WhatsApp. Le dernier ticket envoyé avant la clôture d\'une question fait foi.</div>'+
+  '<div class="rule"><b>5. LES RÉSULTATS</b>Chaque question cite sa source. Si l\'événement n\'a pas lieu (ex. aucun sondage publié), la question est annulée et la mise rendue. Résultats complets mardi 3 novembre au soir.</div>'+
+  '<div class="rule"><b>6. QUESTION 13</b>Pur hasard : la somme moyenne de 5 numéros tirés entre 1 et 50 est 127,5. Une chance sur deux, en théorie.</div>'+
+  '<button class="cta ghost" id="rename">CHANGER D\'INITIALES</button></div>';
+}
+
+function render(){
+  var C=compute();hud(C);
+  document.querySelectorAll(".ni").forEach(function(b){if(b.dataset.go===tab)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
+  if(tab==="jouer")renderJouer(C);else if(tab==="ticket")renderTicket();else if(tab==="scores")renderScores(C);else renderRegles();
+}
+
+/* ===== écran de départ (initiales) ===== */
+var A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+function drawSlots(){
+  var h="";for(var i=0;i<3;i++){h+='<div class="slot"><button class="arr" data-l="'+i+'" data-d="1" aria-label="Lettre suivante, case '+(i+1)+'">▲</button><span class="let" aria-live="polite">'+A[letters[i]]+'</span><button class="arr" data-l="'+i+'" data-d="-1" aria-label="Lettre précédente, case '+(i+1)+'">▼</button></div>';}
+  document.getElementById("slots").innerHTML=h;
+}
+function showStart(){
+  if(me.ini)letters=me.ini.split("").map(function(c){return Math.max(0,A.indexOf(c));});
+  drawSlots();document.getElementById("start").hidden=false;
+}
+document.getElementById("slots").addEventListener("click",function(e){var b=e.target.closest(".arr");if(!b)return;var i=+b.dataset.l;letters[i]=(letters[i]+(+b.dataset.d)+26)%26;drawSlots();});
+document.getElementById("press").addEventListener("click",function(){
+  var ini=letters.map(function(i){return A[i];}).join("");
+  if(ini!==me.ini){me.ini=ini;me.sent="";}
+  save(KEY,me);document.getElementById("start").hidden=true;render();
+});
+
+/* ===== interactions ===== */
+document.querySelector(".nav").addEventListener("click",function(e){var b=e.target.closest(".ni");if(!b)return;tab=b.dataset.go;try{history.replaceState(null,"","#"+tab);}catch(x){}render();window.scrollTo(0,0);});
+view.addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;
+  if(t.classList.contains("opt")){var id=+t.dataset.q,o=+t.dataset.o,p=me.picks[id],free=START-staked();
+    if(p){p.o=o;}else{var s=STAKES.filter(function(x){return x<=free;});if(!s.length){flashMsg("Plus assez de jetons : baisse une autre mise.");return;}me.picks[id]={o:o,s:s.indexOf(100)>-1?100:s[s.length-1]};}
+    save(KEY,me);render();return;}
+  if(t.classList.contains("stk")){me.picks[+t.dataset.q].s=+t.dataset.s;save(KEY,me);render();return;}
+  if(t.dataset.del){delete me.picks[+t.dataset.del];save(KEY,me);render();return;}
+  if(t.id==="copy"){var txt=document.getElementById("tk").textContent;
+    var done=function(){me.sent=picksSig();save(KEY,me);render();flashMsg("COPIÉ. COLLE-LE DANS LE GROUPE.");};
+    try{navigator.clipboard.writeText(txt).then(done,function(){selectTicket();});}catch(x){selectTicket();}return;}
+  if(t.id==="bk-go"){bk.text=document.getElementById("bk-text").value;save(BKEY,bk);render();return;}
+  if(t.id==="bk-clear"){bk={text:"",results:{}};save(BKEY,bk);render();return;}
+  if(t.id==="rename"){showStart();return;}
+});
+view.addEventListener("click",function(e){var a=e.target.closest("#wa");if(a){me.sent=picksSig();save(KEY,me);setTimeout(render,300);}});
+view.addEventListener("change",function(e){var s=e.target.closest("select[data-r]");if(!s)return;var v=s.value;bk.results[s.dataset.r]=v===""?"":(v==="x"?"x":+v);if(v==="")delete bk.results[s.dataset.r];save(BKEY,bk);render();});
+function selectTicket(){var el=document.getElementById("tk");if(!el)return;var r=document.createRange();r.selectNodeContents(el);var s=window.getSelection();s.removeAllRanges();s.addRange(r);flashMsg("TEXTE SÉLECTIONNÉ : COPIE-LE À LA MAIN.");}
+function flashMsg(m){var f=document.getElementById("flash");if(f){f.textContent=m;}}
+
+/* ===== démarrage ===== */
+var h=(location.hash||"").slice(1);if(["jouer","ticket","scores","regles"].indexOf(h)>-1)tab=h;
+render();
+if(!me.ini)showStart();
+setInterval(function(){if(tab==="jouer"&&!document.querySelector(":focus"))render();},60000);
+})();
+</script>
+
+</body>
+</html>
