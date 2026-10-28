@@ -56,6 +56,8 @@ Arcade années 80, générique (ne copier aucun logo ni typographie d'une œuvre
 4. Déploiement Vercel, lien à partager, vérification sur téléphone.
 
 ## État actuel (28/10/2026)
-- Phase 1 en ligne : `index.html` est une page statique autonome (aucune dépendance, polices Google Fonts), servie par GitHub Pages. Les joueurs postent un ticket texte (`#CENTURIE ABC <minutes base36> 1a100.2b50...`) dans le groupe WhatsApp ; le classement se calcule dans l'onglet SCORES (mode banquier) ou en ajoutant les tickets et résultats dans l'objet `DATA` du script.
-- Les 16 questions sont dans le tableau `Q` du script (ids 1 à 16, contigus : l'id sert d'index).
-- Phase 2 (après le test) : remplacer le ticket WhatsApp par Supabase (comptes, prédictions, résultats, classement temps réel) selon le brief ci-dessus.
+- `index.html` : page autonome servie par GitHub Pages (branche `main`, racine). Supabase via supabase-js 2.45.4 (UMD jsDelivr), connexion anonyme (un compte par appareil), polices Google Fonts.
+- `supabase.sql` : tables `questions` (clôtures), `players` (3 initiales uniques), `predictions`, `results`, `admins` ; RLS : chacun voit ses pronos, ceux des autres seulement après `closes_at` ; écriture des pronos interdite après la clôture ; budget 1 000 jetons vérifié par trigger ; résultats modifiables par les seuls `admins`.
+- Les 16 questions (texte, options) sont dans le tableau `Q` du script ; leurs clôtures doivent rester identiques à la table `questions`.
+- Configuration : `SUPABASE_URL` et `SUPABASE_ANON_KEY` en haut du script (la clé anon est publique par conception, la sécurité repose sur les règles RLS).
+- Scores calculés côté client (pari mutuel sur les questions figées). Suite possible : vue SQL pour les scores, temps réel, ajout de questions depuis un écran admin.
