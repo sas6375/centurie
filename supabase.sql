@@ -107,3 +107,11 @@ create trigger predictions_budget before insert or update on public.predictions
 
 -- À lancer PLUS TARD, après avoir choisi tes initiales dans le jeu (remplace SAS si besoin) :
 -- insert into public.admins (user_id) select user_id from public.players where initials = 'SAS';
+
+-- 6. « Qui a joué » (façon Doodle) : expose seulement joueur + question, jamais la réponse ni la mise
+create or replace function public.participation()
+returns table (user_id uuid, question_id int)
+language sql stable security definer set search_path = public
+as $$ select p.user_id, p.question_id from public.predictions p $$;
+revoke all on function public.participation() from public;
+grant execute on function public.participation() to anon, authenticated;

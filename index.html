@@ -134,6 +134,19 @@ select{background:var(--deep);color:var(--fg);border:3px solid var(--line);font-
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:45;max-width:min(440px,calc(100% - 32px));background:var(--cyan);color:var(--bg);border:3px solid var(--white);box-shadow:4px 4px 0 var(--mag);font-family:var(--f-pix);font-size:9px;line-height:1.6;padding:8px 12px;text-align:center}
 .toast.bad{background:var(--red);color:var(--white);box-shadow:4px 4px 0 var(--cyan)}
 #banner{margin-top:14px}
+.who{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;font-size:19px}
+.chip{font-family:var(--f-pix);font-size:8px;padding:5px 6px;border:2px solid var(--line);color:var(--mut)}
+.chip.in{background:var(--cyan);color:var(--bg);border-color:var(--cyan)}
+.grid-wrap{overflow-x:auto;border:4px solid var(--line);background:var(--deep)}
+.grid{border-collapse:collapse;font-variant-numeric:tabular-nums;width:100%}
+.grid th,.grid td{border:1px solid #2a2155;text-align:center;padding:0;height:34px;min-width:34px}
+.grid thead th{font-family:var(--f-pix);font-size:8px;color:var(--fg);padding:6px 2px;position:sticky;top:0;background:var(--panel)}
+.grid thead th.me{background:var(--mag);color:var(--bg)}
+.grid th.q{text-align:left;font-family:var(--f-txt);font-size:18px;padding:0 8px;white-space:nowrap;position:sticky;left:0;background:var(--panel);min-width:0}
+.grid td.y{background:rgba(61,242,255,.18);color:var(--cyan);font-family:var(--f-pix);font-size:10px}
+.grid td.n{color:#4a3d8f;font-size:18px}
+.grid tfoot th,.grid tfoot td{font-family:var(--f-pix);font-size:8px;color:var(--yel);background:var(--panel)}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:19px}
 </style>
 </head>
 <body>
@@ -155,6 +168,7 @@ select{background:var(--deep);color:var(--fg);border:3px solid var(--line);font-
 <nav class="nav" aria-label="Navigation">
   <div class="in">
     <button class="ni" data-go="jouer"><svg width="21" height="27" viewBox="0 0 7 9" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 0h5v1H1zM0 1h2v1H0zM5 1h2v2H5zM4 3h2v1H4zM2 4h2v2H2zM2 7h2v2H2z"/></svg>PRÉDIRE</button>
+    <button class="ni" data-go="groupe"><svg width="27" height="21" viewBox="0 0 9 7" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h9v1H0zM0 0h1v7H0zM8 0h1v7H8zM0 6h9v1H0zM0 3h9v1H0zM3 0h1v7H3zM6 0h1v7H6z"/></svg>GROUPE</button>
     <button class="ni" data-go="scores"><svg width="33" height="21" viewBox="0 0 11 7" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h1v1H0zM5 0h1v1H5zM10 0h1v1h-1zM0 1h2v1H0zM4 1h3v1H4zM9 1h2v1H9zM0 2h3v1H0zM4 2h3v1H4zM8 2h3v1H8zM0 3h11v4H0z"/></svg>SCORES</button>
     <button class="ni" data-go="regles"><svg width="21" height="27" viewBox="0 0 7 9" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 0h1v1H3zM2 2h3v1H2zM3 3h1v4H3zM2 7h3v1H2z"/></svg>RÈGLES</button>
   </div>
@@ -208,7 +222,7 @@ var START=1000, STAKES=[50,100,250], A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 /* ===== état ===== */
 var sb=null, uid=null, isAdmin=false, tab="jouer", letters=[0,0,0];
 var me={ini:"",picks:{}};
-var cache={players:[],preds:[],results:{}};
+var cache={players:[],preds:[],results:{},part:[]};
 var view=document.getElementById("view");
 
 /* ===== utilitaires ===== */
@@ -240,12 +254,14 @@ async function loadAll(){
     sb.from("players").select("user_id,initials"),
     sb.from("predictions").select("user_id,question_id,option,stake"),
     sb.from("results").select("question_id,outcome"),
-    sb.from("admins").select("user_id").eq("user_id",uid)
+    sb.from("admins").select("user_id").eq("user_id",uid),
+    sb.rpc("participation")
   ]);
   for(var i=0;i<3;i++) if(r[i].error) throw r[i].error;
   cache.players=r[0].data||[];cache.preds=r[1].data||[];cache.results={};
   (r[2].data||[]).forEach(function(x){cache.results[x.question_id]=x.outcome==="x"?"x":+x.outcome;});
   isAdmin=!!(r[3].data&&r[3].data.length);
+  cache.part=(r[4]&&!r[4].error&&r[4].data)||[];
   me.picks={};
   cache.preds.forEach(function(p){if(p.user_id===uid)me.picks[p.question_id]={o:p.option,s:p.stake};});
   var mine=cache.players.filter(function(p){return p.user_id===uid;})[0];
@@ -261,6 +277,7 @@ async function savePick(id){
   render();
 }
 
+function played(qid){var set={};cache.part.forEach(function(x){if(x.question_id===qid)set[x.user_id]=1;});if(me.picks[qid])set[uid]=1;else delete set[uid];return set;}
 /* ===== calcul des scores (pari mutuel, sur les questions figées) ===== */
 function compute(){
   var now=Date.now(),res=cache.results,pools={},bets={};
@@ -291,7 +308,7 @@ function hud(C){
   document.getElementById("hud").innerHTML=
     '<div class="hc"><b>'+(me.ini||"???")+'</b><span>'+(rank?rank+(rank===1?"ER":"E")+" / "+C.rows.length:"JOUEUR")+'</span></div>'+
     '<div class="hc"><b>'+Object.keys(me.picks).length+'/'+Q.length+'</b><span>PRONOS</span></div>'+
-    '<div class="hc"><b>'+(mine?fmt(mine.score+mine.live):"—")+'</b><span>SCORE · '+done+'/'+Q.length+'</span></div>';
+    '<div class="hc"><b>'+(mine?fmt(mine.score+mine.live):"—")+'</b><span>SCORE</span></div>';
 }
 function renderJouer(C){
   var now=Date.now(),free=START-staked(),h="";
@@ -315,8 +332,12 @@ function card(q,C,now,free){
     h+='<div class="stakes" role="group" aria-label="Mise">';
     STAKES.forEach(function(s){var can=s<=free+p.s;h+='<button class="stk" data-q="'+q.id+'" data-s="'+s+'" aria-pressed="'+(p.s===s)+'"'+(can?'':' disabled')+'>'+s+'</button>';});
     h+='<button class="del" data-del="'+q.id+'" aria-label="Retirer mon prono">X</button></div>';
-  } else if(!isClosed&&!p){
-    h+='<div class="src">Personne ne voit les pronos des autres avant la clôture.</div>';
+  }
+  if(!isClosed&&cache.players.length){
+    var pls=played(q.id),nb=Object.keys(pls).length;
+    h+='<div class="who"><span class="mut">'+nb+'/'+cache.players.length+' ONT JOUÉ :</span>';
+    cache.players.forEach(function(pl){h+='<span class="chip'+(pls[pl.user_id]?' in':'')+'">'+esc(pl.initials)+'</span>';});
+    h+='</div>';
   }
   if(isClosed){
     var pl=C.pools[q.id];
@@ -350,6 +371,30 @@ function renderScores(C){
   }
   view.innerHTML=h;
 }
+function renderGroupe(C){
+  var now=Date.now(),pl=cache.players.slice().sort(function(a,b){return a.user_id===uid?-1:b.user_id===uid?1:a.initials.localeCompare(b.initials);});
+  var h='<h2 class="h2">QUI A JOUÉ</h2><div class="intro">Comme un Doodle : <b style="color:var(--cyan)">✓</b> = a joué, réponse secrète jusqu\'à la clôture. Ensuite, la case montre son choix.</div>';
+  if(!pl.length){view.innerHTML=h+'<div class="empty">Aucun joueur pour l\'instant.</div>';return;}
+  var qs=Q.slice().sort(function(a,b){return a.t-b.t;});
+  h+='<div class="grid-wrap"><table class="grid"><thead><tr><th class="q">QUESTION</th>';
+  pl.forEach(function(p){h+='<th'+(p.user_id===uid?' class="me"':'')+'>'+esc(p.initials)+'</th>';});
+  h+='</tr></thead><tbody>';
+  var tot={};pl.forEach(function(p){tot[p.user_id]=0;});
+  qs.forEach(function(q){var pls=played(q.id),closed=q.t<=now;
+    h+='<tr><th class="q" scope="row">'+q.id+'. '+esc(q.th.split(' · ')[0])+(closed?' <span class="mut">(FIGÉE)</span>':'')+'</th>';
+    pl.forEach(function(p){var did=!!pls[p.user_id];if(did)tot[p.user_id]++;
+      var b=C.bets[p.user_id]&&C.bets[p.user_id][q.id];
+      if(closed&&b){h+='<td class="y" style="background:'+COLS[b.o]+';color:var(--bg)" title="'+esc(q.o[b.o])+'">'+"ABCD"[b.o]+'</td>';}
+      else h+=did?'<td class="y">✓</td>':'<td class="n">·</td>';});
+    h+='</tr>';});
+  h+='</tbody><tfoot><tr><th class="q">TOTAL</th>';
+  pl.forEach(function(p){h+='<td>'+tot[p.user_id]+'</td>';});
+  h+='</tr></tfoot></table></div>';
+  h+='<div class="leg"><span class="mut">Après clôture :</span><span style="color:var(--cyan)">A = 1re réponse</span><span style="color:var(--red)">B = 2e</span><span style="color:var(--yel)">C = 3e</span><span style="color:var(--mag)">D = 4e</span></div>';
+  var lazy=pl.filter(function(p){return p.user_id!==uid&&tot[p.user_id]===0;});
+  if(lazy.length)h+='<div class="ok">PAS ENCORE JOUÉ : '+lazy.map(function(p){return esc(p.initials);}).join(", ")+'. RELANCE-LES DANS LE GROUPE !</div>';
+  view.innerHTML=h;
+}
 function renderRegles(){
   view.innerHTML='<div class="rules">'+
   '<div class="rule"><b>1. TES JETONS</b>1 000 jetons virtuels pour tout le test. Mise 50, 100 ou 250 par question. Aucun argent réel.</div>'+
@@ -364,7 +409,7 @@ function render(){
   var C=compute();hud(C);
   document.querySelectorAll(".ni").forEach(function(b){if(b.dataset.go===tab)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
   if(!sb){return;}
-  if(tab==="jouer")renderJouer(C);else if(tab==="scores")renderScores(C);else renderRegles();
+  if(tab==="jouer")renderJouer(C);else if(tab==="groupe")renderGroupe(C);else if(tab==="scores")renderScores(C);else renderRegles();
 }
 
 /* ===== écran de départ ===== */
@@ -399,7 +444,7 @@ view.addEventListener("change",async function(e){var s=e.target.closest("select[
 
 /* ===== démarrage ===== */
 async function boot(){
-  var h=(location.hash||"").slice(1);if(["jouer","scores","regles"].indexOf(h)>-1)tab=h;
+  var h=(location.hash||"").slice(1);if(["jouer","groupe","scores","regles"].indexOf(h)>-1)tab=h;
   if(!window.supabase||SUPABASE_URL.indexOf("http")!==0){banner("JEU PAS ENCORE BRANCHÉ À SA BASE. REVIENS UN PEU PLUS TARD.");view.innerHTML="";return;}
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
   try{
