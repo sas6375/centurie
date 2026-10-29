@@ -237,6 +237,7 @@ var Q=[
 Q.forEach(function(q){q.t=Date.parse(q.c);});
 var QBY={};Q.forEach(function(q){QBY[q.id]=q;});
 function syncQuestions(rows){rows.forEach(function(r){var q=QBY[r.id],t=Date.parse(r.closes_at);
+  if(r.theme==="RETIRÉE"){if(q){Q.splice(Q.indexOf(q),1);delete QBY[r.id];}return;}
   if(q){q.t=t;return;}
   if(r.text&&r.options&&r.options.length>1){q={id:r.id,th:r.theme||"MAISON",q:r.text,o:r.options,src:r.source||"Jury de la famille",t:t};Q.push(q);QBY[q.id]=q;}});}
 var START=1500, STAKES=[50,100,250], A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -295,7 +296,7 @@ async function loadAll(){
   cache.part=(r[4]&&!r[4].error&&r[4].data)||[];
   if(r[5]&&!r[5].error)syncQuestions(r[5].data||[]);
   me.picks={};
-  cache.preds.forEach(function(p){if(p.user_id===uid)me.picks[p.question_id]={o:p.option,s:p.stake};});
+  cache.preds.forEach(function(p){if(p.user_id===uid&&QBY[p.question_id])me.picks[p.question_id]={o:p.option,s:p.stake};});
   var mine=cache.players.filter(function(p){return p.user_id===uid;})[0];
   me.ini=mine?mine.initials:"";
 }
