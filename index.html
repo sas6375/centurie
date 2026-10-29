@@ -193,8 +193,8 @@ select{background:var(--deep);color:var(--fg);border:3px solid var(--line);font-
 "use strict";
 
 /* ===== Configuration Supabase (adresse du projet + clé publique « anon ») ===== */
-var SUPABASE_URL="@@URL@@";
-var SUPABASE_ANON_KEY="@@KEY@@";
+var SUPABASE_URL="https://mkbilgimxsafewlqiqkw.supabase.co";
+var SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rYmlsZ2lteHNhZmV3bHFpcWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNTk4NzAsImV4cCI6MjEwODgzNTg3MH0.qxQ-zajLHghBXkngp8EU3Y1OoBKD1dD1jdJm1XNwlOo";
 
 /* ===== Les 16 questions (heure de Paris, UTC+1). Les clôtures sont aussi dans la table « questions » ===== */
 var Q=[
@@ -208,11 +208,11 @@ var Q=[
  {id:8,th:"MÉTÉO",q:"Température max. à Paris dimanche 1er novembre ?",o:["< 12°C","12-15°C","> 15°C"],c:"2026-10-31T22:00:00+01:00",src:"Station Paris-Montsouris · Météo-France / Infoclimat"},
  {id:9,th:"BOURSE",q:"Le CAC 40 clôture-t-il vendredi 30/10 plus haut que mercredi 28/10 ?",o:["OUI","NON"],c:"2026-10-29T22:00:00+01:00",src:"Euronext · ven. 17h35"},
  {id:10,th:"CRYPTO",q:"Le Bitcoin vaut-il plus dimanche 20h que jeudi 20h ?",o:["OUI","NON"],c:"2026-10-30T20:00:00+01:00",src:"CoinMarketCap · dim. 20h"},
- {id:11,th:"PRÉSIDENTIELLE",q:"Premier sondage de 1er tour publié du 29/10 au 2/11 : qui arrive 2e derrière le RN ?",o:["MÉLENCHON","PHILIPPE","GLUCKSMANN","AUTRE"],c:"2026-10-29T08:00:00+01:00",src:"Sondeur · annulée si aucun sondage"},
+ {id:11,th:"PRÉSIDENTIELLE",q:"Premier sondage de 1er tour publié du 30/10 au 2/11 : qui arrive 2e derrière le RN ?",o:["MÉLENCHON","PHILIPPE","GLUCKSMANN","AUTRE"],c:"2026-10-29T22:00:00+01:00",src:"Sondeur · annulée si aucun sondage"},
  {id:12,th:"POLITIQUE",q:"La 1re partie du budget 2027 est-elle adoptée au vote de l'Assemblée du mardi 3 novembre ?",o:["OUI","NON"],c:"2026-11-02T22:00:00+01:00",src:"Assemblée nationale · « NON » si rejet, report ou 49.3"},
  {id:13,th:"HASARD",q:"EuroMillions de vendredi : la somme des 5 numéros dépasse-t-elle 127 ?",o:["OUI","NON"],c:"2026-10-30T20:00:00+01:00",src:"FDJ · tirage ven. soir"},
  {id:14,th:"CINÉ · JEUNES",q:"Box-office US du week-end d'Halloween : quel film finit n°1 ?",o:["CLAYFACE","YOU CAN SEE EVERYTHING","AUTRE"],c:"2026-10-30T20:00:00+01:00",src:"Box Office Mojo · estimations dim. soir"},
- {id:15,th:"JEU VIDÉO · JEUNES",q:"Rockstar publie-t-il une nouvelle bande-annonce de GTA VI d'ici dimanche 1er novembre minuit ?",o:["OUI","NON"],c:"2026-10-29T12:00:00+01:00",src:"Chaîne YouTube Rockstar Games"},
+ {id:15,th:"JEU VIDÉO · JEUNES",q:"Rockstar publie-t-il une nouvelle bande-annonce de GTA VI d'ici dimanche 1er novembre minuit ?",o:["OUI","NON"],c:"2026-10-29T22:00:00+01:00",src:"Chaîne YouTube Rockstar Games"},
  {id:16,th:"MUSIQUE · JEUNES",q:"Top Singles SNEP publié vendredi : le n°1 est-il le même que la semaine d'avant ?",o:["OUI","NON"],c:"2026-10-29T22:00:00+01:00",src:"SNEP · classement du vendredi"}
 ];
 Q.forEach(function(q){q.t=Date.parse(q.c);});
