@@ -273,7 +273,7 @@ function toast(msg,bad){var t=document.getElementById("toast");t.textContent=msg
 function banner(msg){var b=document.getElementById("banner");b.textContent=msg;b.hidden=!msg;}
 function errMsg(e){var m=(e&&e.message)||"";
   if(/Budget/.test(m)) return "BUDGET DÉPASSÉ : BAISSE UNE AUTRE MISE.";
-  if(/row-level security|violates/.test(m)) return "QUESTION FIGÉE : PRONO REFUSÉ.";
+  if(/row-level security/.test(m)) return "QUESTION FIGÉE : LA CLÔTURE EST PASSÉE.";
   if(/duplicate key|unique/.test(m)) return "INITIALES DÉJÀ PRISES : CHANGE UNE LETTRE.";
   if(/Anonymous sign-ins are disabled/i.test(m)) return "CONNEXION ANONYME DÉSACTIVÉE DANS SUPABASE.";
   return "ERREUR RÉSEAU : RÉESSAIE.";}
@@ -502,6 +502,7 @@ document.getElementById("press").addEventListener("click",async function(){
 document.querySelector(".nav").addEventListener("click",async function(e){var b=e.target.closest(".ni");if(!b)return;tab=b.dataset.go;try{history.replaceState(null,"","#"+tab);}catch(x){}render();window.scrollTo(0,0);if(sb){try{await loadAll();render();}catch(x){}}});
 view.addEventListener("click",function(e){
   var t=e.target.closest("button");if(!t)return;
+  var qid=+(t.dataset.q||t.dataset.del||0);if(qid&&QBY[qid]&&QBY[qid].t<=Date.now()){toast("QUESTION FIGÉE : LA CLÔTURE EST PASSÉE.",true);render();return;}
   if(t.classList.contains("opt")){var id=+t.dataset.q,o=+t.dataset.o,p=me.picks[id],free=START-staked();
     if(p){if(p.o===o)return;p.o=o;}else{var s=STAKES.filter(function(x){return x<=free;});if(!s.length){toast("PLUS ASSEZ DE JETONS : BAISSE UNE AUTRE MISE.",true);return;}me.picks[id]={o:o,s:s.indexOf(100)>-1?100:s[s.length-1]};}
     savePick(id);return;}
@@ -531,6 +532,7 @@ async function boot(){
   setInterval(function(){if(!sb||!uid)return;if(document.querySelector("select:focus"))return;loadAll().then(function(){render();checkReveal();}).catch(function(){});},90000);
   setInterval(function(){if(tab==="jouer"&&uid)render();},60000);
 }
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&uid){render();loadAll().then(function(){render();checkReveal();}).catch(function(){});}});
 boot();
 })();
 </script>
