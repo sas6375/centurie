@@ -115,3 +115,18 @@ language sql stable security definer set search_path = public
 as $$ select p.user_id, p.question_id from public.predictions p $$;
 revoke all on function public.participation() from public;
 grant execute on function public.participation() to anon, authenticated;
+
+-- 7. Questions maison créées depuis le site (admin) + question 17
+alter table public.questions add column if not exists text text;
+alter table public.questions add column if not exists options text[];
+alter table public.questions add column if not exists theme text;
+alter table public.questions add column if not exists source text;
+drop policy if exists "questions admin" on public.questions;
+create policy "questions admin" on public.questions for all
+  using (exists (select 1 from public.admins a where a.user_id = auth.uid()))
+  with check (exists (select 1 from public.admins a where a.user_id = auth.uid()));
+insert into public.questions (id, closes_at, text, options, theme, source) values
+  (17, '2026-10-30 20:00+01', 'Qui va le plus aider à la maison ce week-end ?',
+   array['OSCAR','EVE','CAPUCINE','LÉONARD'], 'MAISON', 'Jury des parents · dim. soir')
+on conflict (id) do update set closes_at = excluded.closes_at, text = excluded.text,
+  options = excluded.options, theme = excluded.theme, source = excluded.source;
