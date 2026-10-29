@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Centurie en famille</title>
-<meta name="description" content="Centurie : le jeu de prédictions de la famille. 16 questions, 1 000 jetons, aucun argent réel.">
+<meta name="description" content="Centurie : le jeu de prédictions de la famille. 1 500 jetons, aucun argent réel.">
 <meta property="og:title" content="Centurie en famille">
 <meta property="og:description" content="16 prédictions pour le week-end. Tes pronos restent secrets jusqu'à la clôture.">
 <meta name="theme-color" content="#0B0720">
@@ -200,7 +200,7 @@ select{background:var(--deep);color:var(--fg);border:3px solid var(--line);font-
     <p class="pix" style="font-size:9px;margin:0">ENTRE TES INITIALES</p>
     <div class="slots" id="slots"></div>
     <p class="mut" style="margin:0;font-size:21px">Trois lettres, comme sur une borne d'arcade. Elles servent de nom dans les scores.</p>
-    <div class="ok" style="width:100%;text-align:left">1 000 JETONS OFFERTS. JEU GRATUIT, AUCUN ARGENT RÉEL.</div>
+    <div class="ok" style="width:100%;text-align:left">1 500 JETONS OFFERTS. JEU GRATUIT, AUCUN ARGENT RÉEL.</div>
     <p class="flash" id="start-msg" role="status"></p>
     <button class="cta" id="press" style="width:100%">PRESS START</button>
   </div>
@@ -239,7 +239,7 @@ var QBY={};Q.forEach(function(q){QBY[q.id]=q;});
 function syncQuestions(rows){rows.forEach(function(r){var q=QBY[r.id],t=Date.parse(r.closes_at);
   if(q){q.t=t;return;}
   if(r.text&&r.options&&r.options.length>1){q={id:r.id,th:r.theme||"MAISON",q:r.text,o:r.options,src:r.source||"Jury de la famille",t:t};Q.push(q);QBY[q.id]=q;}});}
-var START=1000, STAKES=[50,100,250], A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var START=1500, STAKES=[50,100,250], A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /* ===== état ===== */
 var sb=null, uid=null, isAdmin=false, tab="jouer", letters=[0,0,0];
@@ -392,7 +392,7 @@ function renderScores(C){
   var ranks=["1ST","2ND","3RD"];
   C.rows.forEach(function(r,i){var col=i===0?"var(--yel)":i===1?"var(--fg)":i===2?"#FF9F1C":"var(--cyan)";
     h+='<div class="hs'+(r.uid===uid?' me':'')+'" style="'+(r.uid===uid?'':'color:'+col)+'"><span>'+(ranks[i]||(i+1)+"TH")+'</span><span>'+esc(r.ini)+moveTag(C,r,i)+'</span><small>'+(r.live?fmt(r.live):"—")+'</small><span>'+fmt(r.score+r.live)+'</span></div>';});
-  h+='</div>'+(gapLine(C)?'<div class="ok">'+gapLine(C)+'</div>':'')+'<p class="mut" style="margin:0;font-size:19px">Score = 1 000 + gains − pertes sur les questions figées. Les mises sur les questions encore ouvertes restent secrètes et ne comptent pas encore.</p>';
+  h+='</div>'+(gapLine(C)?'<div class="ok">'+gapLine(C)+'</div>':'')+'<p class="mut" style="margin:0;font-size:19px">Score = 1 500 + gains − pertes sur les questions figées. Les mises sur les questions encore ouvertes restent secrètes et ne comptent pas encore.</p>';
   if(isAdmin){
     h+='<details open><summary>RÉSULTATS (ADMIN)</summary><div class="res">';
     Q.forEach(function(q){var v=C.res[q.id];v=v===undefined?"":String(v);
@@ -436,7 +436,7 @@ function renderGroupe(C){
 }
 function renderRegles(){
   view.innerHTML='<div class="rules">'+
-  '<div class="rule"><b>1. TES JETONS</b>1 000 jetons virtuels pour tout le test. Mise 50, 100 ou 250 par question. Aucun argent réel.</div>'+
+  '<div class="rule"><b>1. TES JETONS</b>1 500 jetons virtuels pour tout le test. Mise 50, 100 ou 250 par question. Aucun argent réel.</div>'+
   '<div class="rule"><b>2. SECRET JUSQU\'À LA CLÔTURE</b>Tes pronos s\'enregistrent tout seuls et tu peux les changer jusqu\'à la clôture. Personne ne voit ceux des autres avant ; ensuite la répartition de la famille s\'affiche sur la question.</div>'+
   '<div class="rule"><b>3. LA COTE, C\'EST LA FAMILLE</b>Si tu as raison : gain = mise × 100 / part des jetons sur ta réponse − mise. Moins vous êtes de ton avis, plus ça rapporte. Exemple : 100 jetons sur une réponse qui pèse 40 % → +150.</div>'+
   '<div class="rule"><b>4. BONUS CONTRE-COURANT</b>+20 jetons si tu gagnes avec le camp minoritaire (moins de 50 %).</div>'+

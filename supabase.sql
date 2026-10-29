@@ -91,12 +91,12 @@ create policy "prono avant cloture (retrait)" on public.predictions for delete u
   user_id = auth.uid() and exists (select 1 from public.questions q where q.id = question_id and q.closes_at > now())
 );
 
--- Budget : 1 000 jetons au total par joueur
+-- Budget : 1 500 jetons au total par joueur
 create or replace function public.check_budget() returns trigger language plpgsql as $$
 begin
   if (select coalesce(sum(stake), 0) from public.predictions
-      where user_id = new.user_id and question_id <> new.question_id) + new.stake > 1000 then
-    raise exception 'Budget de 1 000 jetons dépassé';
+      where user_id = new.user_id and question_id <> new.question_id) + new.stake > 1500 then
+    raise exception 'Budget de 1 500 jetons dépassé';
   end if;
   new.updated_at := now();
   return new;
