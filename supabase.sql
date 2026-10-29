@@ -130,3 +130,41 @@ insert into public.questions (id, closes_at, text, options, theme, source) value
    array['OSCAR','EVE','CAPUCINE','LÉONARD'], 'MAISON', 'Jury des parents · dim. soir')
 on conflict (id) do update set closes_at = excluded.closes_at, text = excluded.text,
   options = excluded.options, theme = excluded.theme, source = excluded.source;
+
+-- 8. Code secret à 4 chiffres pour retrouver son joueur sur un autre appareil
+alter table public.players add column if not exists pin text;
+revoke select on public.players from anon, authenticated;
+grant select (user_id, initials, created_at) on public.players to anon, authenticated;
+grant insert (user_id, initials) on public.players to anon, authenticated;
+grant update (user_id, initials) on public.players to anon, authenticated;
+
+create or replace function public.set_pin(p text) returns void
+language plpgsql security definer set search_path = public, extensions as $$
+begin
+  if p !~ '^[0-9]{4}$' then raise exception 'Code invalide'; end if;
+  update public.players set pin = crypt(p, gen_salt('bf')) where user_id = auth.uid();
+end $$;
+
+create or replace function public.has_pin() returns boolean
+language sql stable security definer set search_path = public as $$
+  select coalesce((select pin is not null from public.players where user_id = auth.uid()), false)
+$$;
+
+create or replace function public.claim_player(ini text, p text) returns boolean
+language plpgsql security definer set search_path = public, extensions as $$
+declare old_id uuid; h text; me uuid := auth.uid();
+begin
+  select user_id, pin into old_id, h from public.players where initials = upper(ini);
+  if old_id is null or h is null or h <> crypt(p, h) then return false; end if;
+  if old_id = me then return true; end if;
+  delete from public.predictions where user_id = me;
+  delete from public.players where user_id = me;
+  delete from public.admins where user_id = me;
+  update public.predictions set user_id = me where user_id = old_id;
+  update public.players set user_id = me where user_id = old_id;
+  update public.admins set user_id = me where user_id = old_id;
+  return true;
+end $$;
+
+revoke all on function public.set_pin(text), public.has_pin(), public.claim_player(text, text) from public;
+grant execute on function public.set_pin(text), public.has_pin(), public.claim_player(text, text) to anon, authenticated;

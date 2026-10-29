@@ -201,6 +201,9 @@ select{background:var(--deep);color:var(--fg);border:3px solid var(--line);font-
     <div class="slots" id="slots"></div>
     <p class="mut" style="margin:0;font-size:21px">Trois lettres, comme sur une borne d'arcade. Elles servent de nom dans les scores.</p>
     <div class="ok" style="width:100%;text-align:left">1 500 JETONS OFFERTS. JEU GRATUIT, AUCUN ARGENT RÉEL.</div>
+    <label for="pin" class="pix" style="font-size:9px;color:var(--yel)">TON CODE SECRET (4 CHIFFRES)</label>
+    <input id="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" style="width:150px;text-align:center;letter-spacing:10px;background:var(--deep);color:var(--yel);border:4px solid var(--yel);font-family:var(--f-pix);font-size:20px;min-height:56px" placeholder="····">
+    <p class="mut" style="margin:0;font-size:19px">Nouveau joueur : invente ton code. Déjà inscrit sur un autre appareil : tape tes initiales et ton code pour retrouver ta partie.</p>
     <p class="flash" id="start-msg" role="status"></p>
     <button class="cta" id="press" style="width:100%">PRESS START</button>
   </div>
@@ -443,6 +446,7 @@ function renderRegles(){
   '<div class="rule"><b>4. BONUS CONTRE-COURANT</b>+20 jetons si tu gagnes avec le camp minoritaire (moins de 50 %).</div>'+
   '<div class="rule"><b>5. LES RÉSULTATS</b>Chaque question cite sa source. Si l\'événement n\'a pas lieu, la question est annulée et la mise rendue. Résultats complets mardi 3 novembre au soir.</div>'+
   '<div class="rule"><b>6. TON COMPTE</b>Il est lié à ce téléphone et ce navigateur : joue toujours depuis le même.</div>'+
+  '<div class="rule"><b>7. AUTRE APPAREIL</b>Ton code secret à 4 chiffres te permet de retrouver ta partie sur un autre téléphone ou ordinateur : tape tes initiales et ton code au démarrage. La partie passe alors sur le nouvel appareil.<div class="form"><label for="newpin">Nouveau code secret</label><input id="newpin" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off"><button class="cta ghost" id="setpin" type="button">ENREGISTRER MON CODE</button></div></div>'+
   '<button class="cta ghost" id="rename">CHANGER D\'INITIALES</button></div>';
 }
 function render(){
@@ -491,10 +495,21 @@ function drawSlots(){var h="";for(var i=0;i<3;i++){h+='<div class="slot"><button
 function showStart(){if(me.ini)letters=me.ini.split("").map(function(c){return Math.max(0,A.indexOf(c));});drawSlots();document.getElementById("start-msg").textContent="";document.getElementById("start").hidden=false;}
 document.getElementById("slots").addEventListener("click",function(e){var b=e.target.closest(".arr");if(!b)return;var i=+b.dataset.l;letters[i]=(letters[i]+(+b.dataset.d)+26)%26;drawSlots();});
 document.getElementById("press").addEventListener("click",async function(){
-  var ini=letters.map(function(i){return A[i];}).join(""),btn=this;btn.disabled=true;
+  var ini=letters.map(function(i){return A[i];}).join(""),btn=this,pin=document.getElementById("pin").value.trim(),msg=document.getElementById("start-msg");
+  if(!/^[0-9]{4}$/.test(pin)){msg.textContent="CHOISIS UN CODE DE 4 CHIFFRES.";return;}
+  btn.disabled=true;
+  var taken=cache.players.some(function(p){return p.initials===ini&&p.user_id!==uid;});
+  if(taken){
+    var c=await sb.rpc("claim_player",{ini:ini,p:pin});btn.disabled=false;
+    if(c.error){msg.textContent=errMsg(c.error);return;}
+    if(!c.data){msg.textContent="INITIALES DÉJÀ PRISES OU CODE INCORRECT.";return;}
+    try{await loadAll();}catch(e){}
+    document.getElementById("start").hidden=true;render();toast("PARTIE RETROUVÉE : BON RETOUR "+ini+" !");checkReveal();return;
+  }
   var r=await sb.from("players").upsert({user_id:uid,initials:ini},{onConflict:"user_id"});
+  if(!r.error){var sp=await sb.rpc("set_pin",{p:pin});if(sp.error)r=sp;}
   btn.disabled=false;
-  if(r.error){document.getElementById("start-msg").textContent=errMsg(r.error);return;}
+  if(r.error){msg.textContent=errMsg(r.error);return;}
   me.ini=ini;try{await loadAll();}catch(e){}
   document.getElementById("start").hidden=true;render();checkReveal();
 });
@@ -510,6 +525,8 @@ view.addEventListener("click",function(e){
   if(t.classList.contains("stk")){var q=+t.dataset.q;if(me.picks[q].s===+t.dataset.s)return;me.picks[q].s=+t.dataset.s;savePick(q);return;}
   if(t.dataset.del){delete me.picks[+t.dataset.del];savePick(+t.dataset.del);return;}
   if(t.id==="rename"){showStart();return;}
+  if(t.id==="setpin"){var v=document.getElementById("newpin").value.trim();if(!/^[0-9]{4}$/.test(v)){toast("4 CHIFFRES, S\'IL TE PLAÎT.",true);return;}
+    sb.rpc("set_pin",{p:v}).then(function(r){toast(r.error?errMsg(r.error):"CODE ENREGISTRÉ",!!r.error);});return;}
 });
 view.addEventListener("change",async function(e){var s=e.target.closest("select[data-r]");if(!s)return;var id=+s.dataset.r,v=s.value,r;
   if(v==="")r=await sb.from("results").delete().eq("question_id",id);
@@ -528,7 +545,7 @@ async function boot(){
     uid=s.user.id;
     await loadAll();
     render();
-    if(!me.ini)showStart();else checkReveal();
+    if(!me.ini)showStart();else{checkReveal();sb.rpc("has_pin").then(function(r){if(r&&r.data===false)toast("CHOISIS TON CODE SECRET DANS RÈGLES POUR JOUER SUR UN AUTRE APPAREIL.",true);});}
   }catch(e){banner(errMsg(e));view.innerHTML='<div class="empty">Impossible de charger la partie. Vérifie ta connexion puis recharge la page.</div>';}
   setInterval(function(){if(!sb||!uid)return;if(document.querySelector("select:focus"))return;loadAll().then(function(){render();checkReveal();}).catch(function(){});},90000);
   setInterval(function(){if(tab==="jouer"&&uid)render();},60000);
