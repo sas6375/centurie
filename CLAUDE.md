@@ -56,7 +56,7 @@ Arcade années 80, générique (ne copier aucun logo ni typographie d'une œuvre
 4. Déploiement Vercel, lien à partager, vérification sur téléphone.
 
 ## État actuel (28/10/2026)
-- `index.html` : page autonome servie par GitHub Pages (branche `main`, racine). Supabase via supabase-js 2.45.4 (UMD jsDelivr), connexion anonyme (un compte par appareil), polices Google Fonts.
+- `index.html` : page autonome servie par GitHub Pages (branche `main`, racine). Supabase via supabase-js 2.45.4 (UMD jsDelivr), connexion anonyme (un compte par appareil), polices Google Fonts (Press Start 2P pour logo, chiffres, boutons et high scores ; Chakra Petch pour tout le texte, choisi pour la lisibilité).
 - `supabase.sql` : tables `questions` (clôtures), `players` (3 initiales uniques), `predictions`, `results`, `admins` ; RLS : chacun voit ses pronos, ceux des autres seulement après `closes_at` ; écriture des pronos interdite après la clôture ; budget 1 000 jetons vérifié par trigger ; résultats modifiables par les seuls `admins`.
 - Les 16 questions (texte, options) sont dans le tableau `Q` du script ; leurs clôtures doivent rester identiques à la table `questions`.
 - Configuration : `SUPABASE_URL` et `SUPABASE_ANON_KEY` en haut du script (la clé anon est publique par conception, la sécurité repose sur les règles RLS).
