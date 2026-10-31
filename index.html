@@ -120,7 +120,7 @@ select{background:var(--deep);color:var(--fg);border:3px solid var(--line);font-
 
 /* nav */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--bg);border-top:4px solid var(--mag);padding:6px max(10px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
-.nav .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.nav .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
 .ni{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:54px;background:transparent;border:0;color:var(--fg);font-family:var(--f-ui);font-weight:700;letter-spacing:.04em;font-size:12px}
 .ni[aria-current="page"]{background:var(--mag);color:var(--bg)}
 .dot{position:absolute;top:4px;right:14px;width:10px;height:10px;background:var(--red);border:2px solid var(--white)}
@@ -147,6 +147,22 @@ select{background:var(--deep);color:var(--fg);border:3px solid var(--line);font-
 .grid td.y{background:rgba(61,242,255,.18);color:var(--cyan);font-family:var(--f-pix);font-size:10px}
 .grid td.n{color:#4a3d8f;font-size:15px}
 .grid tfoot th,.grid tfoot td{font-family:var(--f-ui);font-weight:700;letter-spacing:.04em;font-size:13px;color:var(--yel);background:var(--panel)}
+.qz{background:var(--panel);border:4px solid var(--yel);box-shadow:5px 5px 0 var(--mag);padding:16px}
+.qz h3{font-family:var(--f-pix);font-size:14px;line-height:1.6;color:var(--yel);margin:0}
+.qq{font-family:var(--f-ui);font-weight:600;font-size:21px;line-height:1.25;margin:12px 0 14px;text-wrap:balance}
+.qo{display:grid;gap:10px}
+.qb{min-height:54px;text-align:left;padding:10px 14px;background:var(--deep);border:3px solid var(--line);color:var(--fg);font-family:var(--f-ui);font-weight:600;font-size:17px;cursor:pointer}
+.qb.good{background:var(--cyan);color:var(--bg);border-color:var(--white)}
+.qb.bad{background:var(--red);color:var(--white);border-color:var(--white)}
+.qb:disabled{cursor:default}
+.timer{height:14px;border:3px solid var(--white);background:var(--deep);margin-top:10px}
+.timer span{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--yel));transform-origin:left;animation:tdown 15s linear forwards}
+@keyframes tdown{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.qmeta{display:flex;justify-content:space-between;font-family:var(--f-ui);font-weight:700;font-size:14px;color:var(--mut);letter-spacing:.04em}
+.qfb{margin-top:14px;font-size:16px}
+.qfb b{font-family:var(--f-pix);font-size:14px}
+.qrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:2px dashed var(--line);font-size:16px}
+@media (prefers-reduced-motion:reduce){.timer span{animation-duration:15s}}
 .leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:16px}
 .reveal{position:fixed;inset:0;z-index:70;background:rgba(5,3,18,.94);overflow:auto;padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .reveal .in{max-width:440px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
@@ -188,6 +204,7 @@ select{background:var(--deep);color:var(--fg);border:3px solid var(--line);font-
 <nav class="nav" aria-label="Navigation">
   <div class="in">
     <button class="ni" data-go="jouer"><svg width="21" height="27" viewBox="0 0 7 9" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 0h5v1H1zM0 1h2v1H0zM5 1h2v2H5zM4 3h2v1H4zM2 4h2v2H2zM2 7h2v2H2z"/></svg>PRÉDIRE</button>
+    <button class="ni" data-go="quiz"><svg width="21" height="27" viewBox="0 0 7 9" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 0h2v1H3zM2 1h1v3H2zM3 3h2v1H3zM4 1h2v1H4zM1 4h1v1H1zM0 5h7v4H0z"/></svg>QUIZ</button>
     <button class="ni" data-go="groupe"><svg width="27" height="21" viewBox="0 0 9 7" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h9v1H0zM0 0h1v7H0zM8 0h1v7H8zM0 6h9v1H0zM0 3h9v1H0zM3 0h1v7H3zM6 0h1v7H6z"/></svg>GROUPE</button>
     <button class="ni" data-go="scores"><svg width="33" height="21" viewBox="0 0 11 7" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h1v1H0zM5 0h1v1H5zM10 0h1v1h-1zM0 1h2v1H0zM4 1h3v1H4zM9 1h2v1H9zM0 2h3v1H0zM4 2h3v1H4zM8 2h3v1H8zM0 3h11v4H0z"/></svg>SCORES</button>
     <button class="ni" data-go="regles"><svg width="21" height="27" viewBox="0 0 7 9" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 0h1v1H3zM2 2h3v1H2zM3 3h1v4H3zM2 7h3v1H2z"/></svg>RÈGLES</button>
@@ -249,7 +266,10 @@ var START=1500, STAKES=[50,100,250], A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 /* ===== état ===== */
 var sb=null, uid=null, isAdmin=false, tab="jouer", letters=[0,0,0];
 var me={ini:"",picks:{}};
-var cache={players:[],preds:[],results:{},part:[]};
+var cache={players:[],preds:[],results:{},part:[],qt:{},quiz:null,plays:[],board:[]};
+var qs={i:-1,t0:0,timer:null,fb:null,busy:false,res:{}};
+function today(){return new Date(Date.now()+3600000).toISOString().slice(0,10);}
+function myBudget(){return START+(cache.qt[uid]||0);}
 var view=document.getElementById("view");
 var prevRanks=null;
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}}
@@ -291,7 +311,11 @@ async function loadAll(){
     sb.from("results").select("question_id,outcome"),
     sb.from("admins").select("user_id").eq("user_id",uid),
     sb.rpc("participation"),
-    sb.from("questions").select("*")
+    sb.from("questions").select("*"),
+    sb.rpc("quiz_totals"),
+    sb.from("quiz").select("*").eq("id",today()),
+    sb.from("quiz_plays").select("idx,choice,correct,points").eq("quiz_id",today()),
+    sb.rpc("quiz_board",{qid:today()})
   ]);
   for(var i=0;i<3;i++) if(r[i].error) throw r[i].error;
   cache.players=r[0].data||[];cache.preds=r[1].data||[];cache.results={};
@@ -299,6 +323,10 @@ async function loadAll(){
   isAdmin=!!(r[3].data&&r[3].data.length);
   cache.part=(r[4]&&!r[4].error&&r[4].data)||[];
   if(r[5]&&!r[5].error)syncQuestions(r[5].data||[]);
+  cache.qt={};((r[6]&&!r[6].error&&r[6].data)||[]).forEach(function(x){cache.qt[x.user_id]=x.points;});
+  cache.quiz=(r[7]&&!r[7].error&&r[7].data&&r[7].data[0])||null;
+  cache.plays=(r[8]&&!r[8].error&&r[8].data)||[];
+  cache.board=(r[9]&&!r[9].error&&r[9].data)||[];
   me.picks={};
   cache.preds.forEach(function(p){if(p.user_id===uid&&QBY[p.question_id])me.picks[p.question_id]={o:p.option,s:p.stake};});
   var mine=cache.players.filter(function(p){return p.user_id===uid;})[0];
@@ -328,7 +356,7 @@ function compute(){
     var pl=pools[q.id];if(!pl||!pl.tot||!pl.by[r])return {ret:b.s,gain:0,kind:"void"};var p=pl.by[r]/pl.tot*100;
     var g=Math.min(10*b.s,b.s*100/p-b.s);if(p<50)g+=20;g=Math.round(g);
     return {ret:b.s+g,gain:g,kind:"win"};}
-  var rows=cache.players.map(function(p){var sc=START,live=0,wins=0;
+  var rows=cache.players.map(function(p){var sc=START+(cache.qt[p.user_id]||0),live=0,wins=0;
     Q.forEach(function(q){var b=bets[p.user_id]&&bets[p.user_id][q.id];if(!b||q.t>now)return;sc-=b.s;
       if(res[q.id]===undefined)live+=b.s;else{var o=outcome(q,b);sc+=o.ret;if(o.kind==="win")wins++;}});
     return {uid:p.user_id,ini:p.initials,score:sc,live:live,wins:wins};
@@ -339,7 +367,7 @@ function compute(){
 /* ===== rendu ===== */
 function hud(C){
   var mine=C.rows.filter(function(r){return r.uid===uid;})[0];
-  document.getElementById("pill-n").textContent=fmt(START-staked());
+  document.getElementById("pill-n").textContent=fmt(myBudget()-staked());
   var done=Q.filter(function(q){return C.res[q.id]!==undefined;}).length;
   var rank=mine?C.rows.indexOf(mine)+1:0;
   document.getElementById("hud").innerHTML=
@@ -348,7 +376,7 @@ function hud(C){
     '<div class="hc"><b>'+(mine?fmt(mine.score+mine.live):"—")+'</b><span>SCORE</span></div>';
 }
 function renderJouer(C){
-  var now=Date.now(),free=START-staked(),h="";
+  var now=Date.now(),free=myBudget()-staked(),h="";
   h+='<div class="intro">Choisis ta réponse puis ta mise : tout s\'enregistre tout seul. <b style="color:var(--yel)">Tes pronos restent secrets</b> jusqu\'à la clôture de chaque question ; ensuite, tout le monde voit ce qu\'a joué la famille.</div>';
   var open=Q.filter(function(q){return q.t>now;}).sort(function(a,b){return a.t-b.t;});
   var closed=Q.filter(function(q){return q.t<=now;}).sort(function(a,b){return b.t-a.t;});
@@ -439,6 +467,57 @@ function renderGroupe(C){
   if(lazy.length)h+='<div class="ok">PAS ENCORE JOUÉ : '+lazy.map(function(p){return esc(p.initials);}).join(", ")+'. RELANCE-LES DANS LE GROUPE !</div>';
   view.innerHTML=h;
 }
+function renderQuiz(){
+  var q=cache.quiz,h="";
+  if(!q){view.innerHTML='<div class="qz"><h3>QUIZ DU JOUR</h3><p class="qq" style="font-size:18px">Pas encore de quiz aujourd\'hui. Le prochain arrive demain matin.</p></div>';return;}
+  var N=q.questions.length,done={};cache.plays.forEach(function(p){done[p.idx]=p;});
+  var nd=Object.keys(done).length;
+  if(qs.i<0||qs.i>=N){
+    if(nd>=N){
+      var pts=0,ok=0;cache.plays.forEach(function(p){pts+=p.points;if(p.correct)ok++;});
+      h+='<div class="qz"><h3>'+esc(q.title.toUpperCase())+'</h3><p class="qq">'+ok+' / '+N+' BONNES RÉPONSES · <span style="color:var(--yel)">+'+pts+' JETONS</span></p>';
+      q.questions.forEach(function(x,i){var p=done[i];h+='<div class="qrow"><span>'+(i+1)+'. '+esc(x.q)+(qs.res[i]?'<br><span class="mut">'+esc(x.o[qs.res[i].answer])+' · '+esc(qs.res[i].explain||"")+'</span>':'')+'</span><b class="'+(p&&p.correct?'win':'lose')+'" style="white-space:nowrap">'+(p&&p.correct?'+'+p.points:'✗')+'</b></div>';});
+      h+='</div>';
+      var bd=cache.board.slice().sort(function(a,b){return b.points-a.points||b.correct-a.correct;}),names={};cache.players.forEach(function(p){names[p.user_id]=p.initials;});
+      h+='<h2 class="h2">CLASSEMENT DU QUIZ</h2><div class="screen"><div class="hs head"><span>RANG</span><span>NOM</span><span>BONNES</span><span>JETONS</span></div>';
+      bd.forEach(function(b,i){if(!names[b.user_id])return;h+='<div class="hs'+(b.user_id===uid?' me':'')+'" style="'+(b.user_id===uid?'':'color:'+(i===0?'var(--yel)':'var(--cyan)'))+'"><span>'+(i+1)+'</span><span>'+esc(names[b.user_id])+'</span><small>'+b.correct+'/'+N+'</small><span>+'+b.points+'</span></div>';});
+      h+='</div><div class="ok">NOUVEAU QUIZ CHAQUE MATIN. LES JETONS GAGNÉS S\'AJOUTENT À TON SCORE ET À TON BUDGET DE MISES.</div>';
+      view.innerHTML=h;return;
+    }
+    var first=0;while(done[first])first++;
+    h+='<div class="qz"><h3>QUIZ DU JOUR</h3><p class="qq">'+esc(q.title)+'</p><p style="margin:0 0 14px">'+N+' questions · 15 secondes chacune · jusqu\'à '+(N*30)+' jetons. Plus tu réponds vite, plus tu gagnes.</p>'+
+       (nd?'<p class="mut" style="margin:0 0 14px">Tu en es à la question '+(first+1)+'.</p>':'')+
+       '<button class="cta" id="qz-go" data-i="'+first+'">'+(nd?'CONTINUER':'PRESS START')+'</button></div>';
+    view.innerHTML=h;return;
+  }
+  var x=q.questions[qs.i],fb=qs.fb;
+  h+='<div class="qz"><div class="qmeta"><span>QUESTION '+(qs.i+1)+' / '+N+'</span><span>'+esc(x.src||"")+'</span></div>';
+  if(!fb)h+='<div class="timer"><span style="animation-delay:-'+((Date.now()-qs.t0)/1000).toFixed(1)+'s"></span></div>';
+  h+='<p class="qq">'+esc(x.q)+'</p><div class="qo">';
+  x.o.forEach(function(o,j){var cls="qb";if(fb){if(j===fb.answer)cls+=" good";else if(j===fb.choice)cls+=" bad";}
+    h+='<button class="'+cls+'" data-qo="'+j+'"'+(fb||qs.busy?' disabled':'')+'>'+"ABCD"[j]+'. '+esc(o)+'</button>';});
+  h+='</div>';
+  if(fb){h+='<div class="qfb"><b class="'+(fb.correct?'win':'lose')+'">'+(fb.correct?'BONNE RÉPONSE · +'+fb.points+' JETONS':(fb.choice<0?'TEMPS ÉCOULÉ':'RATÉ'))+'</b><p style="margin:8px 0 14px">'+esc(fb.explain||"")+'</p>'+
+      '<button class="cta" id="qz-next">'+(qs.i+1<N?'QUESTION SUIVANTE':'VOIR MON SCORE')+'</button></div>';}
+  h+='</div>';
+  view.innerHTML=h;
+}
+function qStart(i){clearTimeout(qs.timer);qs.i=i;qs.fb=null;qs.busy=false;qs.t0=Date.now();
+  qs.timer=setTimeout(function(){qAnswer(-1);},15000);render();window.scrollTo(0,0);}
+async function qAnswer(c){if(qs.busy||qs.fb)return;qs.busy=true;clearTimeout(qs.timer);
+  var ms=Date.now()-qs.t0,i=qs.i;
+  var r=await sb.rpc("answer_quiz",{qid:cache.quiz.id,i:i,c:c,ms:ms});
+  qs.busy=false;
+  if(r.error){toast(errMsg(r.error),true);render();return;}
+  qs.fb={correct:r.data.correct,answer:r.data.answer,explain:r.data.explain,points:r.data.points,choice:c};qs.res[i]=qs.fb;
+  cache.plays=cache.plays.filter(function(p){return p.idx!==i;}).concat([{idx:i,choice:c,correct:r.data.correct,points:r.data.points}]);
+  render();}
+view.addEventListener("click",async function(e){var t=e.target.closest("button");if(!t)return;
+  if(t.id==="qz-go"){qStart(+t.dataset.i);return;}
+  if(t.dataset.qo!==undefined){qAnswer(+t.dataset.qo);return;}
+  if(t.id==="qz-next"){var N=cache.quiz.questions.length,done={};cache.plays.forEach(function(p){done[p.idx]=1;});var n=qs.i+1;while(n<N&&done[n])n++;
+    if(n<N)qStart(n);else{qs.i=-1;qs.fb=null;try{await loadAll();}catch(x){}render();window.scrollTo(0,0);}return;}
+});
 function renderRegles(){
   view.innerHTML='<div class="rules">'+
   '<div class="rule"><b>1. TES JETONS</b>1 500 jetons virtuels pour tout le test. Mise 50, 100 ou 250 par question. Aucun argent réel.</div>'+
@@ -447,6 +526,7 @@ function renderRegles(){
   '<div class="rule"><b>4. BONUS CONTRE-COURANT</b>+20 jetons si tu gagnes avec le camp minoritaire (moins de 50 %).</div>'+
   '<div class="rule"><b>5. LES RÉSULTATS</b>Chaque question cite sa source. Si l\'événement n\'a pas lieu, la question est annulée et la mise rendue. Résultats complets mardi 3 novembre au soir.</div>'+
   '<div class="rule"><b>6. TON COMPTE</b>Il est lié à ce téléphone et ce navigateur : joue toujours depuis le même.</div>'+
+  '<div class="rule"><b>QUIZ DU JOUR</b>5 questions d\'actu chaque jour, 15 secondes chacune. Bonne réponse : 20 jetons + jusqu\'à 10 de bonus de rapidité. Les jetons gagnés s\'ajoutent à ton score et à ton budget de mises.</div>'+
   '<div class="rule"><b>7. AUTRE APPAREIL</b>Ton code secret à 4 chiffres te permet de retrouver ta partie sur un autre téléphone ou ordinateur : tape tes initiales et ton code au démarrage. La partie passe alors sur le nouvel appareil.<div class="form"><label for="newpin">Nouveau code secret</label><input id="newpin" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" autocomplete="off"><button class="cta ghost" id="setpin" type="button">ENREGISTRER MON CODE</button></div></div>'+
   '<button class="cta ghost" id="rename">CHANGER D\'INITIALES</button></div>';
 }
@@ -454,7 +534,7 @@ function render(){
   var C=compute();hud(C);
   document.querySelectorAll(".ni").forEach(function(b){if(b.dataset.go===tab)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
   if(!sb){return;}
-  if(tab==="jouer")renderJouer(C);else if(tab==="groupe")renderGroupe(C);else if(tab==="scores")renderScores(C);else renderRegles();
+  if(tab==="jouer")renderJouer(C);else if(tab==="quiz")renderQuiz();else if(tab==="groupe")renderGroupe(C);else if(tab==="scores")renderScores(C);else renderRegles();
 }
 
 /* ===== révélation des nouveaux résultats ===== */
@@ -520,7 +600,7 @@ document.querySelector(".nav").addEventListener("click",async function(e){var b=
 view.addEventListener("click",function(e){
   var t=e.target.closest("button");if(!t)return;
   var qid=+(t.dataset.q||t.dataset.del||0);if(qid&&QBY[qid]&&QBY[qid].t<=Date.now()){toast("QUESTION FIGÉE : LA CLÔTURE EST PASSÉE.",true);render();return;}
-  if(t.classList.contains("opt")){var id=+t.dataset.q,o=+t.dataset.o,p=me.picks[id],free=START-staked();
+  if(t.classList.contains("opt")){var id=+t.dataset.q,o=+t.dataset.o,p=me.picks[id],free=myBudget()-staked();
     if(p){if(p.o===o)return;p.o=o;}else{var s=STAKES.filter(function(x){return x<=free;});if(!s.length){toast("PLUS ASSEZ DE JETONS : BAISSE UNE AUTRE MISE.",true);return;}me.picks[id]={o:o,s:s.indexOf(100)>-1?100:s[s.length-1]};}
     savePick(id);return;}
   if(t.classList.contains("stk")){var q=+t.dataset.q;if(me.picks[q].s===+t.dataset.s)return;me.picks[q].s=+t.dataset.s;savePick(q);return;}
@@ -537,7 +617,7 @@ view.addEventListener("change",async function(e){var s=e.target.closest("select[
 
 /* ===== démarrage ===== */
 async function boot(){
-  var h=(location.hash||"").slice(1);if(["jouer","groupe","scores","regles"].indexOf(h)>-1)tab=h;
+  var h=(location.hash||"").slice(1);if(["jouer","quiz","groupe","scores","regles"].indexOf(h)>-1)tab=h;
   if(!window.supabase||SUPABASE_URL.indexOf("http")!==0){banner("JEU PAS ENCORE BRANCHÉ À SA BASE. REVIENS UN PEU PLUS TARD.");view.innerHTML="";return;}
   sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
   try{

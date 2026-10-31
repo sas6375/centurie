@@ -62,4 +62,5 @@ Arcade années 80, générique (ne copier aucun logo ni typographie d'une œuvre
 - Configuration : `SUPABASE_URL` et `SUPABASE_ANON_KEY` en haut du script (la clé anon est publique par conception, la sécurité repose sur les règles RLS).
 - Questions maison : colonnes `text/options/theme/source` dans `questions` ; les lignes ayant un `text` s'ajoutent au tableau `Q` au chargement (ex. Q17). Les admins peuvent en créer depuis SCORES.
 - Révélation : à l'ouverture, les résultats non vus (localStorage `centurie-seen-<uid>`) déclenchent l'écran télé brouillée → verdicts → bilan ; flèches ▲▼ du classement depuis la dernière révélation (`centurie-ranks-<uid>`).
+- Quiz du jour : tables `quiz` (questions visibles), `quiz_key` (réponses, lisibles par les seuls admins), `quiz_plays` ; RPC `answer_quiz` (corrige côté serveur, 20 pts + bonus vitesse ≤ 10), `quiz_board`, `quiz_totals`. L'id du quiz est la date de Paris (AAAA-MM-JJ). Les jetons de quiz s'ajoutent au score et au budget (trigger `check_budget`).
 - Scores calculés côté client (pari mutuel sur les questions figées). Suite possible : vue SQL pour les scores, temps réel, ajout de questions depuis un écran admin.
